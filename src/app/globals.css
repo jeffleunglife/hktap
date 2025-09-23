@@ -135,6 +135,85 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+[data-animate="category-card"] {
+  position: relative;
+  overflow: hidden;
+  --category-shine: 0;
+}
+
+[data-animate="category-card"]::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 65%
+  );
+  opacity: calc(0.25 + var(--category-shine) * 0.35);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+[data-animate="category-card"]::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(
+      120% 180% at 0% 100%,
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.32) 0%,
+      rgba(255, 255, 255, 0) 55%
+    );
+  opacity: calc(var(--category-shine) * 0.75);
+  transform: translateX(calc((var(--category-shine) - 1) * 35%));
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+[data-animate="sketch-card"] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  --sketch-progress: 0;
+}
+
+[data-animate="sketch-card"]::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px dashed rgba(59, 130, 246, 0.25);
+  opacity: calc(0.15 + var(--sketch-progress) * 0.45);
+  transform-origin: left center;
+  transform: scaleX(calc(0.3 + var(--sketch-progress) * 0.7));
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+[data-animate="sketch-card"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.28) 0px,
+    rgba(255, 255, 255, 0.28) 12px,
+    transparent 12px,
+    transparent 24px
+  );
+  opacity: calc(0.1 + var(--sketch-progress) * 0.35);
+  transform-origin: left center;
+  transform: scaleX(calc(0.05 + var(--sketch-progress) * 0.95));
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

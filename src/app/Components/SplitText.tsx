@@ -20,6 +20,7 @@ export interface SplitTextProps {
   tag?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span";
   textAlign?: React.CSSProperties["textAlign"];
   onLetterAnimationComplete?: () => void;
+  once?: boolean;
 }
 
 const SplitText: React.FC<SplitTextProps> = ({
@@ -36,6 +37,7 @@ const SplitText: React.FC<SplitTextProps> = ({
   tag = "p",
   textAlign = "center",
   onLetterAnimationComplete,
+  once = true,
 }) => {
   const ref = useRef<HTMLParagraphElement>(null);
   const animationCompletedRef = useRef(false);
@@ -99,6 +101,19 @@ const SplitText: React.FC<SplitTextProps> = ({
         reduceWhiteSpace: false,
         onSplit: (self: GSAPSplitText) => {
           assignTargets(self);
+          const triggerConfig: ScrollTrigger.Vars = {
+            trigger: el,
+            start,
+            fastScrollEnd: true,
+            anticipatePin: 0.4,
+          };
+
+          if (once) {
+            triggerConfig.once = true;
+          } else {
+            triggerConfig.toggleActions = "play none none reverse";
+          }
+
           return gsap.fromTo(
             targets,
             { ...from },
@@ -107,13 +122,7 @@ const SplitText: React.FC<SplitTextProps> = ({
               duration,
               ease,
               stagger: delay / 1000,
-              scrollTrigger: {
-                trigger: el,
-                start,
-                once: true,
-                fastScrollEnd: true,
-                anticipatePin: 0.4,
-              },
+              scrollTrigger: triggerConfig,
               onComplete: () => {
                 animationCompletedRef.current = true;
                 onLetterAnimationComplete?.();
@@ -148,6 +157,7 @@ const SplitText: React.FC<SplitTextProps> = ({
         rootMargin,
         fontsLoaded,
         onLetterAnimationComplete,
+        once,
       ],
       scope: ref,
     }
