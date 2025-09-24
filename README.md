@@ -2,21 +2,37 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+## Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- [Node.js](https://nodejs.org/) **18.17 or newer** (Next.js 14 requirement)
+- npm 9+ (installed with Node) or another supported package manager (pnpm, yarn, bun)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If you do not already have Node installed locally, we recommend using
+[nvm](https://github.com/nvm-sh/nvm) so you can quickly switch between versions.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local Development
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+   Replace `npm` with your preferred package manager if needed.
+
+2. (Optional) create a `.env` file and add any environment variables described below so
+   Supabase and the AI assistant can connect to their services while you develop locally.
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Visit [http://localhost:3000](http://localhost:3000) in your browser. The page
+   automatically reloads when you edit files under `src/`.
+
+To build the production bundle locally, run `npm run build` followed by `npm start`.
 
 ## Features Setup
 

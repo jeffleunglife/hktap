@@ -39,6 +39,7 @@ const SplitText: React.FC<SplitTextProps> = ({
 }) => {
   const ref = useRef<HTMLParagraphElement>(null);
   const animationCompletedRef = useRef(false);
+  const prevTextRef = useRef(text);
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
@@ -51,8 +52,16 @@ const SplitText: React.FC<SplitTextProps> = ({
     }
   }, []);
 
+  useEffect(() => {
+    if (prevTextRef.current !== text) {
+      animationCompletedRef.current = false;
+      prevTextRef.current = text;
+    }
+  }, [text]);
+
   useGSAP(
     () => {
+      if (animationCompletedRef.current) return;
       if (!ref.current || !text || !fontsLoaded) return;
       const el = ref.current as HTMLElement & {
         _rbsplitInstance?: GSAPSplitText;
