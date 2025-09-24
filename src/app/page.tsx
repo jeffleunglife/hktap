@@ -74,12 +74,23 @@ const paintGroup = {
   },
 };
 
-const paintItem = {
-  hidden: { opacity: 0, clipPath: "inset(0 0 100% 0)" },
+const sketchWipeItem = {
+  hidden: {
+    opacity: 0,
+    clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)",
+  },
   visible: {
     opacity: 1,
-    clipPath: "inset(0 0 0% 0)",
-    transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1] },
+    clipPath: [
+      "polygon(0 0, 0 0, 0 100%, 0 100%)",
+      "polygon(0 0, 55% 0, 40% 100%, 0 100%)",
+      "polygon(0 0, 85% 0, 70% 100%, 0 100%)",
+      "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+    ],
+    transition: {
+      opacity: { duration: 0.3, ease: [0.42, 0, 0.58, 1] },
+      clipPath: { duration: 1.4, ease: "easeInOut" },
+    },
   },
 };
 
@@ -171,7 +182,9 @@ export default function Home() {
   const selectedCategory = searchParams.get("category") || "default";
 
   const supabaseUrl = "https://sokmrypoigsarqrdmgpq.supabase.co";
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_KEY ??
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNva21yeXBvaWdzYXJxcmRtZ3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MjkwMzksImV4cCI6MjA3MzMwNTAzOX0.Ft4CaoxdTlSANniyiSv3MYSp0QMqLgmuT36yRu6FPwI";
 
   const [currentCategory, setCurrentCategory] = useState("");
   const [locationsData, setLocationsData] = useState<any[]>([]);
@@ -568,7 +581,7 @@ export default function Home() {
           <div className="p-4 col-span-3">
             <motion.div
               className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
-              variants={paintItem}
+              variants={sketchWipeItem}
             >
               <div
                 className="w-full h-[20em] rounded-xl"
@@ -594,7 +607,7 @@ export default function Home() {
           <div className="p-4 col-span-3">
             <motion.div
               className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
-              variants={paintItem}
+              variants={sketchWipeItem}
             >
               <div
                 className="w-full h-[20em] rounded-xl"
@@ -617,7 +630,7 @@ export default function Home() {
           <div className="p-4 col-span-2">
             <motion.div
               className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
-              variants={paintItem}
+              variants={sketchWipeItem}
             >
               <div
                 className="w-full h-[20em] rounded-xl"
@@ -647,7 +660,7 @@ export default function Home() {
           <div className="p-4 col-span-2">
             <motion.div
               className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
-              variants={paintItem}
+              variants={sketchWipeItem}
             >
               <div
                 className="w-full h-[20em] rounded-xl"
@@ -668,7 +681,7 @@ export default function Home() {
           <div className="p-4 col-span-4">
             <motion.div
               className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
-              variants={paintItem}
+              variants={sketchWipeItem}
             >
               <div
                 className="w-full h-[20em] rounded-xl"
@@ -703,7 +716,7 @@ export default function Home() {
           <div className="p-4 col-span-1">
             <motion.div
               className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
-              variants={paintItem}
+              variants={sketchWipeItem}
             >
               <div
                 className="w-full h-[20em] rounded-xl"
@@ -983,25 +996,33 @@ export default function Home() {
             </div>
           </motion.div>
 
-          <motion.p
-            className="relative z-[60] text-center text-3xl lg:text-5xl font-semibold text-white mt-20"
-            variants={pullItem}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.4 }}
-          >
-            AND
-          </motion.p>
         </div>
 
-        <div className="mt-[30em] mb-[20em] flex justify-center rounded-xl px-10">
-          <Link href={"https://github.com/RedTotally/hktap"}>
-            <img
-              className="w-[65em] rounded-xl cursor-pointer  hover:brightness-[90%] duration-300"
-              src={"/open-source.png"}
-            ></img>
-          </Link>
-        </div>
+        <section className="bg-white pt-24">
+          <motion.div
+            className="flex justify-center"
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.5 }}
+          >
+            <motion.p
+              className="text-center text-3xl lg:text-5xl font-semibold"
+              variants={pullItem}
+            >
+              AND
+            </motion.p>
+          </motion.div>
+
+          <div className="mt-16 mb-[20em] flex justify-center rounded-xl px-10">
+            <Link href={"https://github.com/RedTotally/hktap"}>
+              <img
+                className="w-[65em] rounded-xl cursor-pointer  hover:brightness-[90%] duration-300"
+                src={"/open-source.png"}
+              ></img>
+            </Link>
+          </div>
+        </section>
 
         <footer className="mb-[25em] px-10">
           <p className="text-center">
