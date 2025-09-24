@@ -73,6 +73,44 @@ export default function Home() {
   ];
 
   useEffect(() => {
+    const animatedElements = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-animate-once='true']")
+    );
+
+    const listeners: Array<{
+      element: HTMLElement;
+      handler: (event: AnimationEvent) => void;
+    }> = [];
+
+    animatedElements.forEach((element) => {
+      if (element.dataset.animatePlayed === "true") return;
+
+      const animationClasses = element.dataset.animateClasses
+        ?.split(" ")
+        .map((cls) => cls.trim())
+        .filter(Boolean);
+
+      if (!animationClasses?.length) return;
+
+      const handleAnimationEnd = () => {
+        animationClasses.forEach((cls) => element.classList.remove(cls));
+        element.dataset.animatePlayed = "true";
+      };
+
+      element.addEventListener("animationend", handleAnimationEnd, {
+        once: true,
+      });
+      listeners.push({ element, handler: handleAnimationEnd });
+    });
+
+    return () => {
+      listeners.forEach(({ element, handler }) => {
+        element.removeEventListener("animationend", handler);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
     async function fetchLocationsData() {
       if (supabaseKey !== undefined) {
         const supabase = createClient(supabaseUrl, supabaseKey);
@@ -234,7 +272,11 @@ export default function Home() {
         </div>
 
         <div>
-          <div className="sticky bg-white top-0 z-[99] py-15 animate-fade-up animate-ease-in-out px-10">
+          <div
+            data-animate-once="true"
+            data-animate-classes="animate-fade-up animate-ease-in-out"
+            className="sticky bg-white top-0 z-[99] py-15 animate-fade-up animate-ease-in-out px-10"
+          >
             <p className="text-center font-bold text-3xl lg:text-5xl">
               Find and Share Your Destinations
             </p>
@@ -724,6 +766,12 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <span className="bg-white text-black px-6 py-2 rounded-full text-lg font-semibold">
+            AND
+          </span>
         </div>
 
         <div className="mt-[30em] mb-[20em] flex justify-center rounded-xl px-10">
