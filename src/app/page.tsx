@@ -3,21 +3,17 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 
 import dynamicImport from "next/dynamic";
-import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import CameraCapture from "./Components/Camera";
 import Chat from "./Components/Chat";
 import Ranking from "./Components/Ranking";
-import Translate from "./Components/Translate";
 import Beams from "@/components/Beams";
 
 import Dock from "./Components/Dock";
-import { tr } from "motion/react-client";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import SplitText from "./Components/SplitText";
-import SpotlightCard from "./Components/SpotlightCard";
+import { motion } from "framer-motion";
 
 const Map = dynamicImport(() => import("./Components/Map"), {
   ssr: false,
@@ -26,6 +22,159 @@ const Map = dynamicImport(() => import("./Components/Map"), {
 
 export const dynamic = "force-dynamic";
 
+const popContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.18,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const popItem = {
+  hidden: { opacity: 0, scale: 0.85, y: 40 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 140, damping: 16 },
+  },
+};
+
+const pullContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.16, delayChildren: 0.05 },
+  },
+};
+
+const pullItem = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 140, damping: 18 },
+  },
+};
+
+const slideFromLeft = {
+  hidden: { opacity: 0, x: -80 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { type: "spring", stiffness: 160, damping: 20 },
+  },
+};
+
+const paintGroup = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.25 },
+  },
+};
+
+const sketchWipeItem = {
+  hidden: {
+    opacity: 0,
+    clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)",
+  },
+  visible: {
+    opacity: 1,
+    clipPath: [
+      "polygon(0 0, 0 0, 0 100%, 0 100%)",
+      "polygon(0 0, 55% 0, 40% 100%, 0 100%)",
+      "polygon(0 0, 85% 0, 70% 100%, 0 100%)",
+      "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+    ],
+    transition: {
+      opacity: { duration: 0.3, ease: [0.42, 0, 0.58, 1] },
+      clipPath: { duration: 1.4, ease: "easeInOut" },
+    },
+  },
+};
+
+const swooshContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.18 },
+  },
+};
+
+const swooshItem = {
+  hidden: { opacity: 0, y: 70, scale: 0.92 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 170, damping: 16 },
+  },
+};
+
+const magicPop = {
+  hidden: { opacity: 0, scale: 0.6 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", stiffness: 210, damping: 14 },
+  },
+};
+
+const wordsContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+  },
+};
+
+const wordVariant = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.6 },
+  },
+};
+
+const AnimatedWords = ({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) => {
+  const words = text.split(" ");
+
+  return (
+    <motion.p
+      className={className}
+      variants={wordsContainer}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false, amount: 0.6 }}
+    >
+      {words.map((word, index) => (
+        <motion.span
+          key={`${word}-${index}`}
+          variants={wordVariant}
+          style={{ display: "inline-block", whiteSpace: "pre" }}
+        >
+          {word}
+          {index < words.length - 1 ? " " : ""}
+        </motion.span>
+      ))}
+    </motion.p>
+  );
+};
+
 export default function Home() {
   const searchParams = new URLSearchParams(
     typeof window !== "undefined" ? window.location.search : ""
@@ -33,7 +182,9 @@ export default function Home() {
   const selectedCategory = searchParams.get("category") || "default";
 
   const supabaseUrl = "https://sokmrypoigsarqrdmgpq.supabase.co";
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_KEY ??
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNva21yeXBvaWdzYXJxcmRtZ3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MjkwMzksImV4cCI6MjA3MzMwNTAzOX0.Ft4CaoxdTlSANniyiSv3MYSp0QMqLgmuT36yRu6FPwI";
 
   const [currentCategory, setCurrentCategory] = useState("");
   const [locationsData, setLocationsData] = useState<any[]>([]);
@@ -258,10 +409,17 @@ export default function Home() {
           </div>
 
           <div className="mt-5 w-full h-[65em] md:h-[25em] lg:h-[35em]">
-            <div className="grid md:grid-cols-3 h-full">
+            <motion.div
+              className="grid md:grid-cols-3 h-full"
+              variants={popContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.35 }}
+            >
               {topCategories.map((item) => {
                 return (
-                  <div
+                  <motion.div
+                    variants={popItem}
                     onClick={() => {
                       setCurrentCategory(item.category);
                       window.location.replace(`/?category=${item.category}`);
@@ -280,10 +438,10 @@ export default function Home() {
                       {item.category.charAt(0).toUpperCase() +
                         item.category.slice(1)}
                     </p>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
         </div>
 
@@ -382,25 +540,49 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mb-[5em] relative z-[80] mt-10 px-10">
-          <div className="flex justify-center items-center mb-5">
+        <motion.div
+          className="mb-[5em] relative z-[80] mt-10 px-10"
+          variants={pullContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.4 }}
+        >
+          <motion.div
+            className="flex justify-center items-center mb-5"
+            variants={pullItem}
+          >
             {" "}
             <img className="w-5" src={"/features.svg"}></img>
             <p className="ml-1 text-center text-gray-600 font-semibold">
               OUR FEATURES
             </p>
-          </div>
-          <p className="text-center text-4xl font-semibold">
+          </motion.div>
+          <motion.p
+            className="text-center text-4xl font-semibold"
+            variants={pullItem}
+          >
             A better way to share, and a better place to find.
-          </p>
-          <p className="mt-10 text-gray-600 text-center">
+          </motion.p>
+          <motion.p
+            className="mt-10 text-gray-600 text-center"
+            variants={pullItem}
+          >
             No more boredom in Hong Kong after using this platform
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <div className="2xl:grid grid-cols-8 gap-5 md:px-10 lg:px-20 relative z-[80]">
+        <motion.div
+          className="2xl:grid grid-cols-8 gap-5 md:px-10 lg:px-20 relative z-[80]"
+          variants={paintGroup}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.3 }}
+        >
           <div className="p-4 col-span-3">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={sketchWipeItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -419,11 +601,14 @@ export default function Home() {
                 are. 3, 2, 1... Captured! Share your location without
                 interruption!
               </p>
-            </div>
+            </motion.div>
           </div>
 
           <div className="p-4 col-span-3">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={sketchWipeItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -439,11 +624,14 @@ export default function Home() {
                 the locations you are deeply interested in. Show the world what
                 you love in Hong Kong by heating them up!
               </p>
-            </div>
+            </motion.div>
           </div>
 
           <div className="p-4 col-span-2">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={sketchWipeItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -458,13 +646,22 @@ export default function Home() {
                 Learn what is popular in Hong Kong, it's time to grab your
                 belongings and go have a look.
               </p>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="2xl:grid grid-cols-6 gap-5 md:px-10 lg:px-20">
+        <motion.div
+          className="2xl:grid grid-cols-6 gap-5 md:px-10 lg:px-20"
+          variants={paintGroup}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.3 }}
+        >
           <div className="p-4 col-span-2">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={sketchWipeItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -479,10 +676,13 @@ export default function Home() {
                 Your recommendation could be so valuable that it becomes red
                 with over 500 heats! Oh, it's hot here.
               </p>
-            </div>
+            </motion.div>
           </div>
           <div className="p-4 col-span-4">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={sketchWipeItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -502,13 +702,22 @@ export default function Home() {
                 advanced model and fresh data, you are promised to get the best
                 guidance possible.
               </p>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="2xl:grid grid-cols-2 gap-5 md:px-10 lg:px-20">
+        <motion.div
+          className="2xl:grid grid-cols-2 gap-5 md:px-10 lg:px-20"
+          variants={paintGroup}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.3 }}
+        >
           <div className="p-4 col-span-1">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={sketchWipeItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -525,10 +734,13 @@ export default function Home() {
                 destinations: more warm, welcoming, and straightforward; we have
                 the right place for you.
               </p>
-            </div>
+            </motion.div>
           </div>
           <div className="p-4 col-span-1">
-            <div className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6">
+            <motion.div
+              className="border-2 rounded-xl p-10 border-gray-200 outline-gray-100 outline-6"
+              variants={paintItem}
+            >
               <div
                 className="w-full h-[20em] rounded-xl"
                 style={{
@@ -545,38 +757,60 @@ export default function Home() {
                 we face troubles, we find solutions. Enthusiasm, solidarity, and
                 thoughtfulness made us unique and magical. We love it here!
               </p>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         <div className="relative z-[50] px-10 2xl:px-20 mt-[20em]">
           <div className="lg:flex justify-between items-center">
-            <div>
-              <div className="flex items-center mb-5">
+            <motion.div
+              variants={pullContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.4 }}
+            >
+              <motion.div
+                className="flex items-center mb-5"
+                variants={slideFromLeft}
+              >
                 {" "}
                 <img className="w-5" src={"/purpose.svg"}></img>
                 <p className="ml-1 text-center text-gray-600 font-semibold">
                   PURPOSE
                 </p>
-              </div>
-              <p className="text-5xl lg:text-7xl font-semibold">Why HKTAP?</p>
-              <p className="text-xl lg:w-[35em] 2xl:w-[45em] mt-5 text-gray-600">
+              </motion.div>
+              <motion.p
+                className="text-5xl lg:text-7xl font-semibold"
+                variants={slideFromLeft}
+              >
+                Why HKTAP?
+              </motion.p>
+              <motion.p
+                className="text-xl lg:w-[35em] 2xl:w-[45em] mt-5 text-gray-600"
+                variants={slideFromLeft}
+              >
                 It's fun, engaging, and filled with love! The best thing?
                 Everyone can use it. Every pin in the map is a real human, a
                 footprint on Hong Kong; it's real. Find somewhere exciting to
                 go, and share somewhere worth your time.
-              </p>
+              </motion.p>
 
-              <div className="mt-10">
+              <motion.div className="mt-10" variants={slideFromLeft}>
                 <a
                   onClick={() => setCamera(true)}
                   className=" text-xl cursor-pointer bg-black text-white px-5 py-2 rounded-xl hover:px-10 duration-300"
                 >
                   「Try to Take a Snapshot」
                 </a>
-              </div>
-            </div>
-            <div className="flex justify-center rounded-xl lg:ml-15">
+              </motion.div>
+            </motion.div>
+            <motion.div
+              className="flex justify-center rounded-xl lg:ml-15"
+              variants={fadeIn}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.4 }}
+            >
               <video
                 className="rounded-xl w-[30em] mt-20 lg:mt-0"
                 loop
@@ -586,31 +820,55 @@ export default function Home() {
                 <source src="hktap-intro.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-            </div>
+            </motion.div>
           </div>
         </div>
 
         <div className="mt-[20em] px-3 md:px-10">
-          <div className="flex justify-center items-center mb-5">
-            {" "}
-            <img className="w-5" src={"/team.svg"}></img>
-            <p className="ml-1 text-center text-gray-600 font-semibold">
-              OUR TEAM
-            </p>
-          </div>
-          <div className="flex justify-center mt-10">
-            <p className="text-center text-3xl lg:text-5xl w-[20em] leading-tight font-semibold">
+          <motion.div
+            className="flex flex-col items-center"
+            variants={pullContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.4 }}
+          >
+            <motion.div
+              className="flex justify-center items-center mb-5"
+              variants={pullItem}
+            >
+              {" "}
+              <img className="w-5" src={"/team.svg"}></img>
+              <p className="ml-1 text-center text-gray-600 font-semibold">
+                OUR TEAM
+              </p>
+            </motion.div>
+            <motion.p
+              className="text-center text-3xl lg:text-5xl w-[20em] leading-tight font-semibold"
+              variants={pullItem}
+            >
               Developed by Four Aspiring Talented Youth in Hong Kong
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
           <div className="flex justify-center">
-            <p className="text-center mt-5 text-gray-600">
+            <motion.p
+              className="text-center mt-5 text-gray-600"
+              variants={magicPop}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.6 }}
+            >
               The platform is built by a group of Gen Zs
-            </p>
+            </motion.p>
           </div>
 
-          <div className="grid md:grid-cols-2 2xl:grid-cols-4 gap-5 md:px-10 2xl:px-20 mt-20">
-            <div className="border-[.1em] p-5 h-[40em]">
+          <motion.div
+            className="grid md:grid-cols-2 2xl:grid-cols-4 gap-5 md:px-10 2xl:px-20 mt-20"
+            variants={swooshContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.3 }}
+          >
+            <motion.div className="border-[.1em] p-5 h-[40em]" variants={swooshItem}>
               <div
                 className="w-full h-[25em] bg-center bg-cover"
                 style={{ backgroundImage: "url('/ricky.png')" }}
@@ -629,9 +887,9 @@ export default function Home() {
                 "Be extraordinary; not just be different, but unique with the
                 greatest endeavor."—Ricky Chan
               </p>
-            </div>
+            </motion.div>
 
-            <div className="border-[.1em] p-5 h-[40em]">
+            <motion.div className="border-[.1em] p-5 h-[40em]" variants={swooshItem}>
               <div
                 className="w-full h-[25em] bg-center bg-contain bg-no-repeat"
                 style={{ backgroundImage: "url('/owenisas.png')" }}
@@ -650,9 +908,9 @@ export default function Home() {
                 "Creating digital experiences with passion and
                 precision."—Thomas Suen
               </p>
-            </div>
+            </motion.div>
 
-            <div className="border-[.1em] p-5 h-[40em]">
+            <motion.div className="border-[.1em] p-5 h-[40em]" variants={swooshItem}>
               <div
                 className="w-full h-[25em] bg-center bg-cover"
                 style={{ backgroundImage: "url('/jeff.png')" }}
@@ -673,9 +931,9 @@ export default function Home() {
                 "Heaven definitely creates us for a purpose. Heads down on best
                 creations, riches will return in season."—Jeff Leung
               </p>
-            </div>
+            </motion.div>
 
-            <div className="border-[.1em] p-5 h-[40em]">
+            <motion.div className="border-[.1em] p-5 h-[40em]" variants={swooshItem}>
               <div
                 className="w-full h-[25em] bg-center bg-cover"
                 style={{ backgroundImage: "url('/chm.png')" }}
@@ -690,8 +948,8 @@ export default function Home() {
               <p className="mt-10 text-xs">
                 "Do the right thing with perseverance."—Jade Chan
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
         <div className="mt-[20em]">
@@ -708,12 +966,25 @@ export default function Home() {
             />
           </div>
 
-          <div className="flex justify-center relative z-[50] text-white items-center">
+          <motion.div
+            className="flex justify-center relative z-[50] text-white items-center"
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.35 }}
+          >
             <div className="mt-[14em]">
-              <p className="text-center text-3xl lg:text-5xl font-semibold">
-                Learn About Our Ideas and Initiatives
-              </p>
-              <div className="flex justify-center mt-10">
+              <AnimatedWords
+                className="text-center text-3xl lg:text-5xl font-semibold"
+                text="Learn About Our Ideas and Initiatives"
+              />
+              <motion.div
+                className="flex justify-center mt-10"
+                variants={pullItem}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, amount: 0.6 }}
+              >
                 <Link
                   className="bg-white p-5 px-20 text-black hover:px-30 duration-300 rounded-xl"
                   target="_blank"
@@ -721,19 +992,37 @@ export default function Home() {
                 >
                   Learn More
                 </Link>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
+
         </div>
 
-        <div className="mt-[30em] mb-[20em] flex justify-center rounded-xl px-10">
-          <Link href={"https://github.com/RedTotally/hktap"}>
-            <img
-              className="w-[65em] rounded-xl cursor-pointer  hover:brightness-[90%] duration-300"
-              src={"/open-source.png"}
-            ></img>
-          </Link>
-        </div>
+        <section className="bg-white pt-24">
+          <motion.div
+            className="flex justify-center"
+            variants={fadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.5 }}
+          >
+            <motion.p
+              className="text-center text-3xl lg:text-5xl font-semibold"
+              variants={pullItem}
+            >
+              AND
+            </motion.p>
+          </motion.div>
+
+          <div className="mt-16 mb-[20em] flex justify-center rounded-xl px-10">
+            <Link href={"https://github.com/RedTotally/hktap"}>
+              <img
+                className="w-[65em] rounded-xl cursor-pointer  hover:brightness-[90%] duration-300"
+                src={"/open-source.png"}
+              ></img>
+            </Link>
+          </div>
+        </section>
 
         <footer className="mb-[25em] px-10">
           <p className="text-center">
